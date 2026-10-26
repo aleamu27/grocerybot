@@ -98,6 +98,7 @@ Easy / Medium / Hard / Expert / Nightmare).
 | `v3_toll` | Load-row toll | – / – / +1.8 / +11 / +202 |
 | `v4` | Speculative stocking (off on dense stores) | – / +2.6 / +2.2 / +17 / (off) |
 | `v5` | Load only into your own tour's truck | +2.4 / +2.8 / +7.5 / +3.4 / +17.8 |
-| `v6` | Bots for a docked truck route first (current) | 0 / +12.5 / +1.5 / +5.8 / +10.8 |
+| `v6` | Bots for a docked truck route first | 0 / +12.5 / +1.5 / +5.8 / +10.8 |
+| `v7` | CMA-ES-tuned guidance graph for Nightmare (current) | – / – / – / – / +32.8 (W/L 20/4) |
 
 CLI mean score over seeds 5000–5009: starter 144 / 161 / 150 / 118 / 208, v5 153 / 211 / 241 / 256 / 590.
