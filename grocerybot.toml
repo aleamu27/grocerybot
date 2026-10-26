@@ -1,0 +1,10 @@
+schema_version = 1
+
+[bot]
+command = ["python3", "-u", "bot_v2.py"]
+protocol = 1
+
+[practice]
+store = "easy"
+seed = 1
+day = 0

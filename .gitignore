@@ -1,0 +1,11 @@
+.venv/
+.venv-opt/
+__pycache__/
+*.pyc
+.env*
+.DS_Store
+trace*.jsonl
+
+# Recordings are large; keep only the one-per-store files that selfplay.py needs for the layouts.
+recordings/*
+!recordings/*-1.jsonl
