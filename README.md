@@ -8,7 +8,7 @@
 ![python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![deps](https://img.shields.io/badge/bot%20dependencies-stdlib%20only-success)
 ![tests](https://img.shields.io/badge/tests-17%20passing-success)
-![version](https://img.shields.io/badge/current-v11-blueviolet)
+![version](https://img.shields.io/badge/current-v12-blueviolet)
 
 </div>
 
@@ -236,7 +236,8 @@ Easy / Medium / Hard / Expert / Nightmare.
 | `v8` | Two-truck tours (when bots ≤ trucks) | +3.5 / +7.5 / – / – / – |
 | `v9` | Rollout planner: each tour chosen by simulating 40 rounds ahead (1 bot) | **+20.0** (W/L 21/0) / – / – / – / – |
 | `v10` | Rollouts only at decision points (1 s budget); unstick bots swinging between two cells | sim: neutral on Hard / Expert / Nightmare |
-| **`v11`** | **Rollouts on Medium too (per-store settings)** | – / **+16.4** (W/L 18/2) / – / – / – |
+| `v11` | Rollouts on Medium too (per-store settings) | – / **+16.4** (W/L 18/2) / – / – / – |
+| **`v12`** | **Idle bots park on central cells instead of the spawn corner (3+ bots per truck)** | – / – / – / – / **+16.3** (W/L 18/5) |
 
 Tried and rejected by measurement (rollouts): rollouts on Hard (+1.8 with the 1 s budget, +3.9 with none:
 with 5+ bots the outcome depends on the interplay, not one bot's choice); a horizon of 30 or 80 on Easy;

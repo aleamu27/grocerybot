@@ -30,6 +30,8 @@ from grocery_ai.route.whca import Router
 from grocery_ai.sim.engine import INVENTORY_CAPACITY
 
 FROZEN_LIMIT = 12
+PARK_WEIGHT = 3.0     # idle bots park on central cells, not where they stand (Nightmare +15/game in sim, 70 seeds)
+PARK_MIN_BOTS_PER_TRUCK = 3   # only with this many bots per truck (Hard, Expert: -1 to -4)
 SWING_UNSTICK = True  # also unstick bots swinging between two cells (head-on livelock in an aisle)
 AGING = 4             # rounds of waiting that outweigh one priority class
 HOLD_LOAD = 99        # a bot on a load cell keeps it until it has loaded
@@ -95,6 +97,11 @@ class Controller:
 
         if self.parking is None:
             self.parking = self._parking_cells(set(load_owner))
+            pickup = sorted({c for cells in self.smap.access.values() for c in cells})
+            loads = sorted(load_owner)
+            d = self.tours.dist
+            self.central = {c: sum(d[c][x] for x in pickup) / len(pickup) + sum(d[c][x] for x in loads) / len(loads)
+                            for c in self.parking}
             load_rows = {self.smap.cells[c][1] for c in load_owner}
             lane = {c for c, (x, y) in enumerate(self.smap.cells) if y in load_rows}
             params = GUIDANCE if GUIDANCE is not None else guidance.load(self.smap)
@@ -110,7 +117,13 @@ class Controller:
         for bot_id in sorted(b for b, r in rank.items() if r == 3):
             pos = position[bot_id]
             free = [c for c in self.parking if c not in claimed or c == spawn]
-            target = pos if pos in free else min(free, key=lambda c: (self.tours.dist[pos][c], c))
+            if PARK_WEIGHT and len(world.bots) >= PARK_MIN_BOTS_PER_TRUCK * len(world.trucks):
+                # park where the next job is likely near: weigh the walk there against the cell's mean
+                # distance to the shelves and trucks (bots stayed on the spawn corner all game)
+                free = [c for c in free if c != spawn] or free
+                target = min(free, key=lambda c: (self.tours.dist[pos][c] + PARK_WEIGHT * self.central[c], c))
+            else:
+                target = pos if pos in free else min(free, key=lambda c: (self.tours.dist[pos][c], c))
             claimed.add(target)
             goal[bot_id] = (target, self.router.window)
 

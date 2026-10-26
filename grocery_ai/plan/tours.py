@@ -17,6 +17,9 @@ from grocery_ai.core.model import MOVES, StaticMap
 from grocery_ai.sim.engine import INVENTORY_CAPACITY, ORDER_BONUS
 
 
+BID_EXP = 1.0   # bid = value / ready**BID_EXP; above 1 favours short tours (splits orders over more bots)
+
+
 @dataclass
 class Tour:
     truck_id: int
@@ -125,7 +128,7 @@ class TourPlanner:
                     tour.then_truck, tour.then_items, tour.then_picks = truck2.id, tuple(carried2) + combo2, combo2
                 if ban and tour.key in ban:
                     continue
-                tour.bid = value / ready
+                tour.bid = value / ready ** BID_EXP
                 if sticky is not None and tour.key == sticky:
                     tour.bid *= stickiness
                 if best is None or tour.bid > best.bid:
