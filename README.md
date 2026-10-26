@@ -8,7 +8,7 @@
 ![python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![deps](https://img.shields.io/badge/bot%20dependencies-stdlib%20only-success)
 ![tests](https://img.shields.io/badge/tests-17%20passing-success)
-![version](https://img.shields.io/badge/current-v7-blueviolet)
+![version](https://img.shields.io/badge/current-v8-blueviolet)
 
 </div>
 
@@ -217,7 +217,8 @@ Easy / Medium / Hard / Expert / Nightmare.
 | `v4` | Speculative stocking (off on dense stores) | – / +2.6 / +2.2 / +17 / off |
 | `v5` | Load only into your own tour's truck | +2.4 / +2.8 / +7.5 / +3.4 / +17.8 |
 | `v6` | Bots serving a docked truck route first | 0 / +12.5 / +1.5 / +5.8 / +10.8 |
-| **`v7`** | **CMA-ES guidance graph for Nightmare** | – / – / – / – / **+32.8** (W/L 20/4) |
+| `v7` | CMA-ES guidance graph for Nightmare | – / – / – / – / **+32.8** (W/L 20/4) |
+| **`v8`** | **Two-truck tours (when bots ≤ trucks)** | +3.5 / +7.5 / – / – / – |
 
 Tried and rejected by measurement: one-way aisles, parking idle bots on spawn, traffic-based parking,
 capping pickups per tour, moving bottleneck picks to idle bots, and loading into any passing truck.
