@@ -81,11 +81,13 @@ class TourPlanner:
         sticky: tuple | None = None,
         stickiness: float = 1.25,
         then: tuple | None = None,
+        ban: frozenset = frozenset(),
     ) -> Tour | None:
         """Highest-bid tour for one bot and one truck, or None if nothing is worth doing.
 
         then = (truck, residual, order_size, carried) of a second truck: only
-        tours that deliver to both, first `truck`, then that one, are tried."""
+        tours that deliver to both, first `truck`, then that one, are tried.
+        Tours whose key is in `ban` are skipped."""
         leg_cell, leg_dist = self.truck_leg(truck.id, truck.load_cells)
         wait = truck.rounds_until_back
         room = min(free, INVENTORY_CAPACITY)
@@ -121,6 +123,8 @@ class TourPlanner:
                 tour = Tour(truck.id, picks, leg_cell[cur], carried, cost, ready, value)
                 if then is not None:
                     tour.then_truck, tour.then_items, tour.then_picks = truck2.id, tuple(carried2) + combo2, combo2
+                if ban and tour.key in ban:
+                    continue
                 tour.bid = value / ready
                 if sticky is not None and tour.key == sticky:
                     tour.bid *= stickiness

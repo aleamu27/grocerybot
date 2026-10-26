@@ -12,8 +12,9 @@ rounds spent on it away from one's goal carry a toll (LANE_TOLL): bots reach
 their truck through the aisle below it instead of along the row.
 Idle bots park: on open cells away from pickup cells and the load row, or on
 the spawn cell, where any number of bots may stack without blocking anyone.
-A bot that has not moved for FROZEN_LIMIT rounds although its goal is
-elsewhere takes a seeded random side step, as a last-resort safety net.
+A bot that has not left one or two cells for FROZEN_LIMIT rounds although its
+goal is elsewhere takes a seeded random side step or wait, as a last-resort
+safety net.
 """
 
 import random
@@ -29,6 +30,7 @@ from grocery_ai.route.whca import Router
 from grocery_ai.sim.engine import INVENTORY_CAPACITY
 
 FROZEN_LIMIT = 12
+SWING_UNSTICK = True  # also unstick bots swinging between two cells (head-on livelock in an aisle)
 AGING = 4             # rounds of waiting that outweigh one priority class
 HOLD_LOAD = 99        # a bot on a load cell keeps it until it has loaded
 HOLD_PICK = 1
@@ -122,10 +124,14 @@ class Controller:
             target = goal[bot_id][0]
             path, mode = paths[bot_id], modes[bot_id]
             nxt = path[1] if len(path) > 1 else pos
-            if nxt == pos and target != pos and self._frozen(bot_id):
+            if target != pos and self._frozen(bot_id):
+                # stuck in place, or swinging between two cells with another bot doing the same
+                # (a head-on meeting in an aisle, both stepping in and back every round: 21
+                # points in an online Medium game); a seeded random step or wait breaks the symmetry
                 free = [c for c in self.smap.neighbours[pos] if self.router.can_enter(bot_id, pos, c, 0)]
-                if free:
-                    nxt, mode = self.rng.choice(free), "unstick"
+                options = free + ([pos] if nxt != pos else [])
+                if options:
+                    nxt, mode = self.rng.choice(options), "unstick"
                     self.history[bot_id].clear()
             actions[bot_id] = {"bot": bot_id, "action": self.move_name[(pos, nxt)]} if nxt != pos \
                 else {"bot": bot_id, "action": "wait"}
@@ -141,7 +147,7 @@ class Controller:
 
     def _frozen(self, bot_id: int) -> bool:
         h = self.history.get(bot_id)
-        return h is not None and len(h) == FROZEN_LIMIT and len(set(h)) == 1 and h[0] != -1
+        return h is not None and len(h) == FROZEN_LIMIT and len(set(h)) <= (2 if SWING_UNSTICK else 1) and -1 not in h
 
     def _load_cell(self, pos: int, truck, occupied: set[int], preferred: int) -> int:
         cells = [self.smap.index[c] for c in truck.load_cells]

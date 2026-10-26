@@ -8,7 +8,7 @@
 ![python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![deps](https://img.shields.io/badge/bot%20dependencies-stdlib%20only-success)
 ![tests](https://img.shields.io/badge/tests-17%20passing-success)
-![version](https://img.shields.io/badge/current-v8-blueviolet)
+![version](https://img.shields.io/badge/current-v10-blueviolet)
 
 </div>
 
@@ -203,6 +203,21 @@ holdout that the tooling refuses without `--holdout`.
 
 ---
 
+## 5 · Rollout planner
+
+On small stores the greedy auction is only a candidate generator. Each bot's top
+$K = 4$ tours are each played forward $H = 40$ rounds on the exact engine, against
+$S = 12$ sampled futures $\omega_j$ shared by all candidates (common random numbers):
+
+```math
+\tau^\star \;=\; \arg\max_{\tau \in \{\tau_1,\dots,\tau_K\}}\;
+\frac{1}{S}\sum_{j=1}^{S} \Bigl(\text{score}_{t+H}(\tau, \omega_j) + \#\{\text{carried items still needed}\}\Bigr)
+```
+
+The bot is held to $\tau$ until it is done, then the greedy policy takes over. A
+longer horizon ($H = 80$) lost: beyond ~40 rounds the outcome is mostly the random
+future, not the choice now. On Easy this alone is worth +20 points per game.
+
 ## Version history
 
 Each version was accepted by SPRT against the one before. Values are mean $d$ per game:
@@ -218,7 +233,9 @@ Easy / Medium / Hard / Expert / Nightmare.
 | `v5` | Load only into your own tour's truck | +2.4 / +2.8 / +7.5 / +3.4 / +17.8 |
 | `v6` | Bots serving a docked truck route first | 0 / +12.5 / +1.5 / +5.8 / +10.8 |
 | `v7` | CMA-ES guidance graph for Nightmare | – / – / – / – / **+32.8** (W/L 20/4) |
-| **`v8`** | **Two-truck tours (when bots ≤ trucks)** | +3.5 / +7.5 / – / – / – |
+| `v8` | Two-truck tours (when bots ≤ trucks) | +3.5 / +7.5 / – / – / – |
+| `v9` | Rollout planner: each tour chosen by simulating 40 rounds ahead (1 bot) | **+20.0** (W/L 21/0) / – / – / – / – |
+| **`v10`** | **Rollouts only at decision points (1 s budget); unstick bots swinging between two cells** | sim: neutral on Hard / Expert / Nightmare |
 
 Tried and rejected by measurement: one-way aisles, parking idle bots on spawn, traffic-based parking,
 capping pickups per tour, moving bottleneck picks to idle bots, and loading into any passing truck.

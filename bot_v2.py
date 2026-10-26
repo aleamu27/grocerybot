@@ -1,4 +1,4 @@
-"""Grocery Bot v2: tour auction planner + simple controller.
+"""Grocery Bot v2: tour auction planner (with rollouts on small stores) + controller.
 
 Set GROCERY_TRACE=path to write one JSON line per round with each bot's plan.
 """
@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from grocery_ai.control.controller import Controller  # noqa: E402
 from grocery_ai.core.model import StaticMap  # noqa: E402
 from grocery_ai.core.state import World  # noqa: E402
-from grocery_ai.plan.planner import Planner  # noqa: E402
+from grocery_ai.plan.rollout import RolloutPlanner  # noqa: E402
 
 
 def main() -> None:
@@ -30,7 +30,7 @@ def main() -> None:
             try:
                 if planner is None:
                     smap = StaticMap.from_state(message)
-                    planner = Planner(smap)
+                    planner = RolloutPlanner(smap)
                     controller = Controller(smap, planner.tours)
                 world = World.from_state(message)
                 actions = controller.act(world, planner.plan(world))

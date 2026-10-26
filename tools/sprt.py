@@ -11,11 +11,15 @@ Either test may stop the run, but only if the other points the same way.
     python3 tools/sprt.py --store medium hard --old "python3 -u bot.py" --new "python3 -u bot_v2.py"
 
 Seeds 20000 and up are the holdout; they are refused unless --holdout is passed.
+Without --seed-start each run draws its own start seed below the holdout (and
+prints it), so successive versions are not all accepted on the same games:
+re-using one test set for every decision slowly overfits it (ESL 7.10.2).
 """
 
 import argparse
 import json
 import math
+import random
 import shlex
 import statistics
 import subprocess
@@ -103,13 +107,17 @@ def main() -> int:
     parser.add_argument("--alpha", type=float, default=0.05)
     parser.add_argument("--beta", type=float, default=0.10)
     parser.add_argument("--p-sign", type=float, default=0.6)
-    parser.add_argument("--seed-start", type=int, default=1000)
+    parser.add_argument("--seed-start", type=int, default=None, help="default: random below the holdout")
     parser.add_argument("--max-pairs", type=int, default=400)
     parser.add_argument("--workers", type=int, default=4)
     parser.add_argument("--holdout", action="store_true", help="allow seeds >= 20000")
     args = parser.parse_args()
-    if args.holdout and args.seed_start < HOLDOUT_START:
+    if args.seed_start is None:
+        low, high = (HOLDOUT_START, 10**8) if args.holdout else (1000, HOLDOUT_START - args.max_pairs)
+        args.seed_start = random.randrange(low, high)
+    elif args.holdout and args.seed_start < HOLDOUT_START:
         args.seed_start = HOLDOUT_START
+    print(f"seeds from {args.seed_start}", flush=True)
 
     sprt = Sprt(args.alpha, args.beta, args.p_sign)
     verdicts = {store: run_store(store, args, sprt) for store in args.store}

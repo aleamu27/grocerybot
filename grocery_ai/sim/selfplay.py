@@ -21,6 +21,7 @@ from grocery_ai.sim.fidelity import load_steps
 TRIP = {"easy": (8, 12), "medium": (9, 15), "hard": (9, 15), "expert": (14, 22), "nightmare": (17, 27)}
 SIZE = {"easy": (3, 4), "medium": (3, 5), "hard": (3, 5), "expert": (4, 6), "nightmare": (4, 7)}
 RECORDINGS = Path(__file__).resolve().parents[2] / "recordings"
+ROLLOUT = True   # play as bot_v2 does, with the rollout planner
 
 
 class UniformOracle:
@@ -44,7 +45,8 @@ def play(store: str, seed: int) -> int:
     """Final score of one simulated game."""
     state = start_state(store)
     smap = StaticMap.from_state(state)
-    planner = Planner(smap)
+    from grocery_ai.plan.rollout import RolloutPlanner   # here: rollout imports this module
+    planner = RolloutPlanner(smap) if ROLLOUT else Planner(smap)
     controller = Controller(smap, planner.tours)
     engine = Engine(smap, UniformOracle(store, sorted(smap.access), seed))
     world = World.from_state(state)

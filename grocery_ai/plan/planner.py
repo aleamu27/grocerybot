@@ -36,15 +36,20 @@ MULTI_TRUCK_RADIUS = 4     # max distance between the two trucks' load cells
 
 
 class Planner:
-    def __init__(self, smap: StaticMap):
+    def __init__(self, smap: StaticMap, tours: TourPlanner | None = None):
         self.smap = smap
-        self.tours = TourPlanner(smap)
+        self.tours = tours or TourPlanner(smap)
         self.previous: dict[int, tuple] = {}   # bot id -> Tour.key it ran last round
         self.trace: list[dict] = []
         self.fetch: dict[str, int] | None = None   # type -> rounds from its shelf to the nearest truck
         self.near_trucks: dict[int, list[int]] | None = None
 
-    def plan(self, world: World) -> dict[int, Tour | None]:
+    def plan(self, world: World, force: dict[int, tuple] | None = None, ban: dict[int, frozenset] | None = None,
+             commit: bool = True) -> dict[int, Tour | None]:
+        """force: bot -> Tour.key it must keep if still possible; ban: bot -> keys it may not
+        take (both for rollouts, grocery_ai.plan.rollout). commit=False leaves the
+        hysteresis state alone."""
+        force, ban = force or {}, ban or {}
         rounds_left = world.max_rounds - world.round
         trucks = {
             t.id: t for t in world.trucks
@@ -93,7 +98,10 @@ class Planner:
             if not cargo and not any(residual[tid].values()):
                 return None
             args = (index[bot.pos], cargo, free[bot_id], residual[tid], trucks[tid], order_size[tid], rounds_left)
-            best = self.tours.best_tour(*args, sticky=self.previous.get(bot_id))
+            sticky = {"sticky": force[bot_id], "stickiness": 1e9} if bot_id in force \
+                else {"sticky": self.previous.get(bot_id)}
+            sticky["ban"] = ban.get(bot_id, frozenset())
+            best = self.tours.best_tour(*args, **sticky)
             if not multi:
                 return best
             if bot_id in carried_then:
@@ -104,7 +112,7 @@ class Planner:
                 if not cargo2 and (not any(residual[tid2].values())
                                    or sum(residual[tid].values()) >= free[bot_id]):
                     continue    # nothing for it, or the first truck alone fills the bot
-                tour = self.tours.best_tour(*args, sticky=self.previous.get(bot_id),
+                tour = self.tours.best_tour(*args, **sticky,
                                             then=(trucks[tid2], residual[tid2], order_size[tid2], cargo2))
                 if tour is not None and (best is None or tour.bid > best.bid):
                     best = tour
@@ -136,6 +144,8 @@ class Planner:
 
         reserved = {b: (tid, cargo + carried_then.get(b, (None, ()))[1]) for b, (tid, cargo) in carried.items()}
         self._stock(world, assigned, reserved, free, rounds_left)
+        if not commit:
+            return assigned
         self.previous = {b: t.key for b, t in assigned.items() if t is not None}
         self.trace = [
             {"bot": b, "truck": t.truck_id, "carried": t.carried, "picks": [p for p, _ in t.picks],
