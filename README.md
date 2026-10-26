@@ -8,7 +8,7 @@
 ![python](https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![deps](https://img.shields.io/badge/bot%20dependencies-stdlib%20only-success)
 ![tests](https://img.shields.io/badge/tests-17%20passing-success)
-![version](https://img.shields.io/badge/current-v10-blueviolet)
+![version](https://img.shields.io/badge/current-v11-blueviolet)
 
 </div>
 
@@ -235,7 +235,13 @@ Easy / Medium / Hard / Expert / Nightmare.
 | `v7` | CMA-ES guidance graph for Nightmare | – / – / – / – / **+32.8** (W/L 20/4) |
 | `v8` | Two-truck tours (when bots ≤ trucks) | +3.5 / +7.5 / – / – / – |
 | `v9` | Rollout planner: each tour chosen by simulating 40 rounds ahead (1 bot) | **+20.0** (W/L 21/0) / – / – / – / – |
-| **`v10`** | **Rollouts only at decision points (1 s budget); unstick bots swinging between two cells** | sim: neutral on Hard / Expert / Nightmare |
+| `v10` | Rollouts only at decision points (1 s budget); unstick bots swinging between two cells | sim: neutral on Hard / Expert / Nightmare |
+| **`v11`** | **Rollouts on Medium too (per-store settings)** | – / **+16.4** (W/L 18/2) / – / – / – |
+
+Tried and rejected by measurement (rollouts): rollouts on Hard (+1.8 with the 1 s budget, +3.9 with none:
+with 5+ bots the outcome depends on the interplay, not one bot's choice); a horizon of 30 or 80 on Easy;
+an MLP tour scorer distilled from rollout decisions (`tools/collect.py`, `tools/fit_scorer.py`; Hard -4.8,
+Expert -15.3, since it cannot beat a teacher that does not help there).
 
 Tried and rejected by measurement: one-way aisles, parking idle bots on spawn, traffic-based parking,
 capping pickups per tour, moving bottleneck picks to idle bots, and loading into any passing truck.
